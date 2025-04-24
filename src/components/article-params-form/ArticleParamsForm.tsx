@@ -3,7 +3,7 @@ import { Button } from 'src/ui/button';
 import clsx from 'clsx';
 
 import styles from './ArticleParamsForm.module.scss';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Text } from 'src/ui/text';
 import { Select } from 'src/ui/select';
 import {
@@ -17,6 +17,7 @@ import {
 } from 'src/constants/articleProps';
 import { RadioGroup } from 'src/ui/radio-group';
 import { Separator } from 'src/ui/separator';
+import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
 
 export type TParamsForm = {
 	fontFamilyOption: OptionType;
@@ -31,8 +32,15 @@ type ArticleParamsFormProps = {
 };
 
 export const ArticleParamsForm = (callbacks: ArticleParamsFormProps = {}) => {
-	const [isOpen, setIsOpen] = useState(false);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [formState, setFormState] = useState<TParamsForm>(defaultArticleState);
+	const rootRef = useRef<HTMLDivElement>(null);
+
+	useOutsideClickClose({
+		isOpen: isMenuOpen,
+		rootRef,
+		onChange: setIsMenuOpen,
+	});
 
 	const onReset = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -45,21 +53,18 @@ export const ArticleParamsForm = (callbacks: ArticleParamsFormProps = {}) => {
 	};
 
 	const openForm = () => {
-		setIsOpen((state) => !state);
+		setIsMenuOpen((state) => !state);
 	};
 	return (
 		<>
-			<ArrowButton isOpen={isOpen} onClick={openForm} />
+			<ArrowButton isOpen={isMenuOpen} onClick={openForm} />
 			<aside
 				className={clsx(styles.container, {
-					[styles.container_open]: isOpen,
-				})}>
-				<form
-					className={styles.form}
-					style={{ rowGap: '50px' }}
-					onSubmit={onSubmit}
-					onReset={onReset}>
-					<Text size={31} weight={800} uppercase={true}>
+					[styles.container_open]: isMenuOpen,
+				})}
+				ref={rootRef}>
+				<form className={styles.form} onSubmit={onSubmit} onReset={onReset}>
+					<Text size={31} weight={800} uppercase={true} as={'h2'}>
 						Задайте параметры
 					</Text>
 					<Select
